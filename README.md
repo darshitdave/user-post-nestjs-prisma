@@ -21,78 +21,227 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+# User & Post API — NestJS + Prisma + JWT
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+A RESTful backend API built with **NestJS**, **Prisma ORM**, and **MariaDB**, featuring JWT-based authentication, user management, and post CRUD operations.
 
-## Project setup
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | NestJS 11 |
+| Language | TypeScript 5 |
+| ORM | Prisma 7 |
+| Database | MariaDB |
+| Auth | JWT + Passport |
+| Password Hashing | bcrypt |
+| Validation | class-validator + class-transformer |
+| Config | @nestjs/config |
+
+---
+
+## Features
+
+- User registration and login with JWT authentication
+- Password hashing with bcrypt
+- Protected routes using JWT Guard
+- Post creation, reading, updating, and deletion
+- Input validation with DTOs
+- Environment-based configuration
+- Prisma ORM with MariaDB via driver adapter
+
+---
+
+## Prerequisites
+
+- Node.js >= 18
+- npm >= 9
+- MariaDB instance running locally or remotely
+
+---
+
+## Getting Started
+
+### 1. Clone the repository
 
 ```bash
-$ npm install
+git clone https://github.com/darshitdave/user-post-nestjs-prisma.git
+cd user-post-nestjs-prisma
 ```
 
-## Compile and run the project
+### 2. Install dependencies
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
+### 3. Configure environment variables
+
+Create a `.env` file in the project root:
+
+```env
+# Database
+DATABASE_URL="mysql://USER:PASSWORD@HOST:3306/DB_NAME?allowPublicKeyRetrieval=true&ssl=false"
+
+# JWT
+JWT_SECRET="your-strong-secret-key"
+JWT_EXPIRES_IN=7d
+```
+
+> **Note:** `allowPublicKeyRetrieval=true` is required for MariaDB/MySQL 8+ authentication.
+
+### 4. Run database migrations
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npx prisma migrate dev --name init
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 5. Generate Prisma client
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npx prisma generate
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 6. Start the development server
 
-## Resources
+```bash
+npm run start:dev
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+The API will be available at `http://localhost:3000`.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+## Available Scripts
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+# Development (watch mode)
+npm run start:dev
 
-## Stay in touch
+# Production build
+npm run build
+npm run start:prod
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```
+
+---
+
+## Running Tests
+
+```bash
+# Unit tests
+npm run test
+
+# Watch mode
+npm run test:watch
+
+# End-to-end tests
+npm run test:e2e
+
+# Test coverage
+npm run test:cov
+```
+
+---
+
+## API Endpoints
+
+### Auth
+
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `POST` | `/auth/register` | Register a new user | No |
+| `POST` | `/auth/login` | Login and receive JWT token | No |
+
+### Users
+
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `GET` | `/users` | Get all users | Yes |
+| `GET` | `/users/:id` | Get user by ID | Yes |
+| `PATCH` | `/users/:id` | Update user | Yes |
+| `DELETE` | `/users/:id` | Delete user | Yes |
+
+### Posts
+
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `POST` | `/posts` | Create a new post | Yes |
+| `GET` | `/posts` | Get all posts | Yes |
+| `GET` | `/posts/:id` | Get post by ID | Yes |
+| `PATCH` | `/posts/:id` | Update post | Yes |
+| `DELETE` | `/posts/:id` | Delete post | Yes |
+
+---
+
+## Authentication
+
+This API uses **Bearer Token** authentication. After logging in, include the token in the `Authorization` header for protected routes:
+
+```
+Authorization: Bearer <your_jwt_token>
+```
+
+### Example: Register
+
+```bash
+curl -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name": "John Doe", "email": "john@example.com", "password": "secret123"}'
+```
+
+### Example: Login
+
+```bash
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "john@example.com", "password": "secret123"}'
+```
+
+### Example: Create Post (Protected)
+
+```bash
+curl -X POST http://localhost:3000/posts \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{"title": "My First Post", "content": "Hello World!"}'
+```
+
+---
+
+## Environment Variables Reference
+
+| Variable | Required | Description | Example |
+|---|---|---|---|
+| `DATABASE_URL` | Yes | MariaDB connection string | `mysql://root:pass@localhost:3306/mydb` |
+| `JWT_SECRET` | Yes | Secret key for signing JWT tokens | `my-super-secret-key` |
+| `JWT_EXPIRES_IN` | No | Token expiry duration (default: `7d`) | `7d`, `1h`, `30m` |
+
+---
+
+## Prisma Commands
+
+```bash
+# Run migrations
+npx prisma migrate dev
+
+# Open Prisma Studio (DB GUI)
+npx prisma studio
+
+# Reset database
+npx prisma migrate reset
+
+# Pull schema from existing DB
+npx prisma db pull
+
+# Push schema changes without migration
+npx prisma db push
+```
+
+---
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+This project is **UNLICENSED** and intended for private use.
