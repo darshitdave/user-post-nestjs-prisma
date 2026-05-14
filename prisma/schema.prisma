@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+  moduleFormat = "cjs" //Matches Prisma's output format with NestJS's CommonJS runtime environment.
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// User table
+model User {
+  id        String   @id @default(uuid())  // Primary key, auto-generate UUID
+  email     String   @unique
+  name      String?  // optional (nullable)
+  password  String   // Required field
+  role      Role     @default(USER)  // Default role is USER
+
+  // One to many relation
+  posts     Post[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")  // Table name
+}
+
+//Posts table
+model Post {
+  id          String   @id @default(uuid())  // Primary key
+  title       String  
+  content     String?  // content (optional)
+  published   Boolean  @default(false)  // Draft by default
+
+  // Foreign key relationship
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade) // If user deleted, delete their posts too 
+  authorId    String   // This actually stores the user's ID
+
+  // Many-to-many relationship
+  tags        Tag[]    
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("posts")  // Table name
+  @@index([authorId])  // Index for faster queries
+}
+
+// Tags table
+model Tag {
+  id    String @id @default(uuid())
+  name  String @unique  // unique
+
+  // Many-to-many with posts
+  posts Post[]  
+
+  @@map("tags")
+}
+
+// Enum for user roles
+enum Role {
+  USER       // Regular user
+  ADMIN      // Admin user
+  MODERATOR  // Moderator
+}
+
